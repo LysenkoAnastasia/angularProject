@@ -1,9 +1,20 @@
 import { Injectable } from '@angular/core';
-
-@Injectable({
-  providedIn: 'root'
-})
+import * as mapboxgl from 'mapbox-gl';
+import {Observable, AsyncSubject} from 'rxjs';
+//
+// @Injectable({
+//   providedIn: 'root'
+// })
 export class MapService {
+  mapInstance: mapboxgl.Map;
+  mapCreated: Observable<void>;
+  mapLoaded: Observable<void>;
 
-  constructor() { }
+  private mapLoad = new AsyncSubject<void>();
+  private mapCreate = new AsyncSubject<void>();
+
+  constructor() {
+    this.mapLoaded = this.mapLoad.asObservable();
+    this.mapCreated = this.mapCreate.asObservable();
+  }
 }
