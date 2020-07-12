@@ -1,14 +1,7 @@
 import { environment } from 'src/environments/environment';
-import {
-  Component,
-  OnInit,
-  ChangeDetectorRef,
-  OnChanges,
-  SimpleChanges,
-  OnDestroy
-} from '@angular/core';
+import {Component, OnInit, ChangeDetectorRef, OnDestroy, OnChanges, SimpleChanges} from '@angular/core';
 import * as mapboxgl from 'mapbox-gl';
-import {MapService} from 'src/app/map.service';
+// import {MapService} from 'src/app/map.service';
 
 @Component({
   selector: 'app-map',
@@ -20,28 +13,11 @@ export class MapComponent implements OnInit, OnChanges, OnDestroy {
   style = 'mapbox://styles/mapbox/streets-v11';
   lat = 55.7;
   lng = 37.61;
-  zoom: 12;
-
-  constructor() {
-  }
-
-  ngOnDestroy(): void {
-        throw new Error("Method not implemented.");
-    }
-
-  ngOnChanges(changes: SimpleChanges): void {
-        throw new Error('Method not implemented.');
-    }
-
-  get mapInstance(): any {
-    return this.mapInstance();
-  }
-
+  constructor() { }
   ngOnInit() {
     Object.getOwnPropertyDescriptor(mapboxgl, 'accessToken').set(environment.mapbox.accessToken);
     // mapboxgl.accessToken = environment.mapbox.accessToken;
     this.map = new mapboxgl.Map({
-      // accessToken: 'pk.eyJ1IjoiYW5hc3Rhc2lhMCIsImEiOiJja2NkMGRjdmMwOXgxMnNwOWhmdXNmbG92In0.9tbEWkSvlsFcehw0tSO9ZQ',
       container: 'map',
       style: this.style,
       zoom: 13,
@@ -49,8 +25,18 @@ export class MapComponent implements OnInit, OnChanges, OnDestroy {
     });
     // Add map controls
     this.map.addControl(new mapboxgl.NavigationControl());
+
+
+    let marker = new mapboxgl.Marker()
+      .setLngLat([37.61, 55.7])
+      .addTo(this.map);
   }
 
 
 
+  ngOnChanges(changes: SimpleChanges): void {
+  }
+
+  ngOnDestroy(): void {
+  }
 }

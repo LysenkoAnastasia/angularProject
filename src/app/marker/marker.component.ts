@@ -8,7 +8,6 @@ import {Component, OnChanges, SimpleChanges} from '@angular/core';
 export class MarkerComponent implements OnChanges{
   title = 'angularProject';
 
-
   ngOnChanges(changes: SimpleChanges): void {
   }
 }
