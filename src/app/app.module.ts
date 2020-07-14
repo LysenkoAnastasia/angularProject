@@ -11,7 +11,7 @@ import {MapInterfaceComponent} from './mapInterface/mapInterface.component';
     AppComponent,
     MapComponent,
     // MarkerComponent,
-    MapInterfaceComponent,
+    // MapInterfaceComponent,
   ],
   imports: [
     BrowserModule

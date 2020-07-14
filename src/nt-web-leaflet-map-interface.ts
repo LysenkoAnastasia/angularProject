@@ -25,7 +25,7 @@ interface MarkerOptions {
     getMarkerColour: (point: Point) => string;
     // function which returns object with fields which
     // are expected to be in point (marker.data) but were moved to other place (for ex. for map results bs info was saved separately from results data)
-    // getAdditionalMarkerData: (point: Point) => any;
+  // getAdditionalMarkerData: (point: Point) => any;
 
     //  returns html string with popup content,
     //  if is_cluster is true - need to return popup content only with common info for all markers inside current cluster
@@ -45,7 +45,7 @@ interface MarkerOptions {
 }
 
 interface Point {
-    _id: string;
+    id: string;
     latitude: number;
     longitude: number;
     azimut: number;

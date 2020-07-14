@@ -35,9 +35,9 @@ export class MapInterfaceComponent implements OnChanges, OnInit, OnDestroy, Laye
     if (!this.isLayerAdd) {
       return;
     }
-    if (changes.paint && !changes.paint.isFirstChange()) {
-      this.MapService.setLayerPaint(this.id, changes.paint.currentValue!);
-    }
+    // if (changes.paint && !changes.paint.isFirstChange()) {
+    //   this.MapService.setLayerPaint(this.id, changes.paint.currentValue!);
+    // }
     // ...
   }
 
@@ -78,7 +78,7 @@ export class MapInterfaceComponent implements OnChanges, OnInit, OnDestroy, Laye
         mouseMove: this.mouseMove
       }
     };
-    this.MapService.addLayer(layer, bindEvents, this.before);
+    // this.MapService.addLayer(layer, bindEvents, this.before);
     this.isLayerAdd = true;
   }
 }
