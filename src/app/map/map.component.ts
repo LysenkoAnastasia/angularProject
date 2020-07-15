@@ -2,7 +2,7 @@ import { environment } from 'src/environments/environment';
 import {Component, OnInit, ChangeDetectorRef, OnDestroy, OnChanges, SimpleChanges} from '@angular/core';
 import * as mapboxgl from 'mapbox-gl';
 // import MarkerOptions from "./src/nt-web-leaflet-map-interface";
-import  {
+import {
   CircleMode,
   DragCircleMode,
   DirectMode,
@@ -14,6 +14,7 @@ import circle from '@turf/circle';
 
 import MapboxDraw from 'mapbox-gl-draw';
 import {convertUpdateArguments} from '@angular/compiler/src/compiler_util/expression_converter';
+import {from} from 'rxjs';
 // import {MapService} from 'src/app/map.service';
 
 @Component({
@@ -59,21 +60,72 @@ export class MapComponent implements MarkerOptions, OnInit, Point {
     longitude: 55.6;
     markerColour: '#880977';
     markerImage: '';
-    radius: 0.3;
+    radius: 1;
+
   };
 
-  p2: {
+
+  // userProperties has to be enabled
+//   draw = new MapboxDraw({
+//     displayControlsDefault: false,
+//     userProperties: true,
+//     defaultMode: 'draw_circle',
+//     clickBuffer: 10,
+//     touchBuffer: 10,
+//     modes: {
+//       ...MapboxDraw.modes,
+//       draw_circle: CircleMode,
+//       direct_select: DirectMode,
+//       simple_select: SimpleSelectMode,
+//       drag_circle: DragCircleMode
+//     }
+//   });
+//
+//   what = e => {
+//     console.log(this.draw.getAll().features);
+//     setTimeout(this.what, 2000);
+//   }.bind(this);
+// }
+//
+//   onMapLoaded = map => {
+//     map.addControl(this.draw);
+//     this.what();
+//
+//     const notifyParent = (features) => this.props.onFeaturesUpdated(features);
+//     map.on('draw.create', e => notifyParent(e.features));
+//     map.on('draw.update', e => notifyParent(e.features));
+//     map.on('draw.delete', e => notifyParent(e.features));
+//
+//   };
+
+
+
+  // // userProperties has to be enabled
+  // draw = new MapboxDraw({
+  //   defaultMode: 'draw_circle',
+  //   userProperties: true,
+  //   modes: {
+  //     ...MapboxDraw.modes,
+  //     draw_circle  : CircleMode,
+  //     drag_circle  : DragCircleMode,
+  //     direct_select: DirectMode,
+  //     simple_select: SimpleSelectMode
+  //   }
+  // });
+
+
+p2: {
     id: 'id_1';
     azimut: 7;
     latitude: 37.3;
     longitude: 55.9;
     markerColour: '#880977';
-    markerImage: '';
+    markerImage: 'monument';
     radius: 0.3;
   };
 
 
-  ngOnInit() {
+ngOnInit() {
     Object.getOwnPropertyDescriptor(mapboxgl, 'accessToken').set(environment.mapbox.accessToken);
     // mapboxgl.accessToken = environment.mapbox.accessToken;
     this.map = new mapboxgl.Map({
@@ -82,7 +134,6 @@ export class MapComponent implements MarkerOptions, OnInit, Point {
       zoom: 13,
       center: [this.lng, this.lat]
     });
-
 
     this.map.on('load', (event) => {
       this.map.addSource('points', {
@@ -131,7 +182,37 @@ export class MapComponent implements MarkerOptions, OnInit, Point {
           'text-anchor': 'top'
         }
       });
-      console.log(l.getLayer('points').id);
+
+      this.map.addSource('maine', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [37.61, 56.3],
+                [38.61, 55.3],
+                [37.61, 54.3],
+                [36.61, 55.3]
+              ]
+            ]
+          }
+        }
+      });
+      this.map.addLayer({
+        id: 'maine',
+        type: 'fill',
+        source: 'maine',
+        layout: {},
+        paint: {
+          'fill-color': '#088',
+          'fill-opacity': 0.8
+        }
+      });
+
+
+      console.log(l.getLayer('points').source.toString());
     });
 
     this.map.addControl(new mapboxgl.NavigationControl());

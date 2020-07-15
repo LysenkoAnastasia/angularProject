@@ -9,6 +9,11 @@
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "~10.0.3",
@@ -20,6 +25,7 @@
     "@angular/platform-browser-dynamic": "~10.0.3",
     "@angular/router": "~10.0.3",
     "@types/mapbox-gl": "^1.11.1",
+    "leaflet": "^1.6.0",
     "mapbox-gl": "^1.11.1",
     "mapbox-gl-draw": "^0.16.0",
     "mapbox-gl-draw-circle": "^1.1.1",
