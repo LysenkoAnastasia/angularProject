@@ -8,13 +8,16 @@ import {
   DirectMode,
   SimpleSelectMode
 } from 'mapbox-gl-draw-circle';
+import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import Constants from '@mapbox/mapbox-gl-draw';
 import doubleClickZoom from '@mapbox/mapbox-gl-draw/src/lib/double_click_zoom';
 import circle from '@turf/circle';
 
-import MapboxDraw from 'mapbox-gl-draw';
 import {convertUpdateArguments} from '@angular/compiler/src/compiler_util/expression_converter';
 import {from} from 'rxjs';
+import {getLocaleDateTimeFormat} from '@angular/common';
+import {DataStore} from 'js-data';
+import {Data} from '@angular/router';
 // import {MapService} from 'src/app/map.service';
 
 @Component({
@@ -65,21 +68,23 @@ export class MapComponent implements MarkerOptions, OnInit, Point {
   };
 
 
+
+
   // userProperties has to be enabled
-//   draw = new MapboxDraw({
-//     displayControlsDefault: false,
-//     userProperties: true,
-//     defaultMode: 'draw_circle',
-//     clickBuffer: 10,
-//     touchBuffer: 10,
-//     modes: {
-//       ...MapboxDraw.modes,
-//       draw_circle: CircleMode,
-//       direct_select: DirectMode,
-//       simple_select: SimpleSelectMode,
-//       drag_circle: DragCircleMode
-//     }
-//   });
+  // draw = new MapboxDraw({
+  //   displayControlsDefault: false,
+  //   userProperties: true,
+  //   defaultMode: 'draw_circle',
+  //   clickBuffer: 10,
+  //   touchBuffer: 10,
+  //   modes: {
+  //     ...MapboxDraw.modes,
+  //     draw_circle: CircleMode,
+  //     direct_select: DirectMode,
+  //     simple_select: SimpleSelectMode,
+  //     drag_circle: DragCircleMode
+  //   }
+  // });
 //
 //   what = e => {
 //     console.log(this.draw.getAll().features);
@@ -99,19 +104,6 @@ export class MapComponent implements MarkerOptions, OnInit, Point {
 //   };
 
 
-
-  // // userProperties has to be enabled
-  // draw = new MapboxDraw({
-  //   defaultMode: 'draw_circle',
-  //   userProperties: true,
-  //   modes: {
-  //     ...MapboxDraw.modes,
-  //     draw_circle  : CircleMode,
-  //     drag_circle  : DragCircleMode,
-  //     direct_select: DirectMode,
-  //     simple_select: SimpleSelectMode
-  //   }
-  // });
 
 
 p2: {
@@ -135,88 +127,202 @@ ngOnInit() {
       center: [this.lng, this.lat]
     });
 
+
+    // const draw = new MapboxDraw({
+    // defaultMode: 'draw_circle',
+    // userProperties: true,
+    // clickBuffer: 10,
+    // touchBuffer: 10,
+    // });
+  // userProperties has to be enabled
+    const draw = new MapboxDraw();
+    this.map.addControl(draw, 'top-left');
+
+
     this.map.on('load', (event) => {
-      this.map.addSource('points', {
+    this.map.addSource('points', {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [
+                -77.03238901390978,
+                38.913188059745586
+              ]
+            },
+            properties: {
+              title: 'Mapbox DC',
+              icon: 'monument'
+            }
+          },
+          {
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [-122.414, 37.776]
+            },
+            properties: {
+              title: 'Mapbox SF',
+              icon: 'harbor'
+            }
+          }
+        ]
+      }
+    });
+    const l = this.map.addLayer({
+      id: 'points',
+      type: 'symbol',
+      source: 'points',
+      layout: {
+
+        'icon-image': ['concat', ['get', 'icon'], '-15'],
+        'text-field': ['get', 'title'],
+        'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+        'text-offset': [0, 0.6],
+        'text-anchor': 'top'
+      }
+    });
+
+    console.log(l.getCenter());
+    // });
+
+    const pol = this.map.addSource('maine', {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [37.61, 56.3],
+              [38.61, 55.3],
+              [37.61, 54.3],
+              [36.61, 55.3]
+            ]
+          ]
+        }
+      }
+    });
+    const pol1 = this.map.addLayer({
+      id: 'maine',
+      type: 'fill',
+      source: 'maine',
+      layout: {},
+      paint: {
+        'fill-color': '#088',
+        'fill-opacity': 0.8
+      }
+    });
+
+
+    console.log(pol1.getCenter());
+  });
+
+    // draw.changeMode('draw_circle', { initialRadiusInKm: 0.5 });
+
+
+  //   console.log(draw);
+
+
+
+    this.map.on('style.load', ev =>  {
+    this.map.addSource('museums', {
+      type: 'vector',
+      url: 'mapbox://mapbox.2opop9hr'
+    });
+    this.map.addLayer({
+      id: 'museums',
+      type: 'circle',
+      source: 'museums',
+      paint: {
+        'circle-radius': 8,
+        'circle-color': 'rgba(55,148,179,1)'
+      },
+      'source-layer': 'museum-cusco'
+    });
+
+    this.map.addSource('contours', {
+      type: 'vector',
+      url: 'mapbox://mapbox.mapbox-terrain-v2'
+    });
+    this.map.addLayer({
+      id: 'contours',
+      type: 'line',
+      source: 'contours',
+      'source-layer': 'contour',
+      layout: {
+        'line-join': 'round',
+        'line-cap': 'round'
+      },
+      paint: {
+        'line-color': '#877b59',
+        'line-width': 1
+      }
+    });
+    this.map.addSource('markers', {
         type: 'geojson',
         data: {
           type: 'FeatureCollection',
-          features: [
-            {
-              type: 'Feature',
-              geometry: {
-                type: 'Point',
-                coordinates: [
-                  -77.03238901390978,
-                  38.913188059745586
-                ]
-              },
-              properties: {
-                title: 'Mapbox DC',
-                icon: 'monument'
-              }
+          features: [{
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [-77.03238901390978, 38.913188059745586]
             },
-            {
-              type: 'Feature',
-              geometry: {
-                type: 'Point',
-                coordinates: [-122.414, 37.776]
-              },
-              properties: {
-                title: 'Mapbox SF',
-                icon: 'harbor'
-              }
-            }
-          ]
+            properties: {
+              modelId: 1,
+            },
+          }, {
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [-122.414, 37.776]
+            },
+            properties: {
+              modelId: 2,
+            },
+          }]
         }
       });
-      const l = this.map.addLayer({
-        id: 'points',
-        type: 'symbol',
-        source: 'points',
-        layout: {
-
-          'icon-image': ['concat', ['get', 'icon'], '-15'],
-          'text-field': ['get', 'title'],
-          'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
-          'text-offset': [0, 0.6],
-          'text-anchor': 'top'
-        }
-      });
-
-      this.map.addSource('maine', {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          geometry: {
-            type: 'Polygon',
-            coordinates: [
-              [
-                [37.61, 56.3],
-                [38.61, 55.3],
-                [37.61, 54.3],
-                [36.61, 55.3]
-              ]
-            ]
-          }
-        }
-      });
-      this.map.addLayer({
-        id: 'maine',
-        type: 'fill',
-        source: 'maine',
-        layout: {},
+    const layer1 = this.map.addLayer({
+        id: 'circles1',
+        source: 'markers',
+        type: 'circle',
+        metadata: '16:15',
         paint: {
-          'fill-color': '#088',
-          'fill-opacity': 0.8
-        }
+          'circle-radius': 10,
+          'circle-color': '#007cbf',
+          'circle-opacity': 0.5,
+          'circle-stroke-width': 0,
+        },
+        filter: ['==', 'modelId', 1],
       });
 
+    const layer2 = this.map.addLayer({
+        id: 'circles2',
+        source: 'markers',
+        type: 'circle',
+        metadata: '16:29',
+        paint: {
+          'circle-radius': 20,
+          'circle-opacity': 0,
+          'circle-stroke-width': 1,
+          'circle-stroke-color': '#00bf7c',
+          'circle-stroke-opacity': 1,
+        },
+        filter: ['==', 'modelId', 2],
+      });
+    console.log('layer = ' + (layer1.getLayer('circles1').metadata < layer2.getLayer('circles2').metadata));
+  });
 
-      console.log(l.getLayer('points').source.toString());
-    });
 
     this.map.addControl(new mapboxgl.NavigationControl());
-
+    this.map.addControl(new mapboxgl.ScaleControl());
+    this.map.addControl(new mapboxgl.FullscreenControl());
 
     const marker = new mapboxgl.Marker()
       .setLngLat([37.61, 55.3])
@@ -227,7 +333,6 @@ ngOnInit() {
       .setLngLat([37.55, 55.7])
       .addTo(this.map);
 
-    console.log();
     // this.comparePoints(marker1.getElement().id, 'id_2');
 
     // });
