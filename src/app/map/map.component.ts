@@ -12,37 +12,64 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import Constants from '@mapbox/mapbox-gl-draw';
 import doubleClickZoom from '@mapbox/mapbox-gl-draw/src/lib/double_click_zoom';
 import circle from '@turf/circle';
+// import MapboxDirections;
 
-import {convertUpdateArguments} from '@angular/compiler/src/compiler_util/expression_converter';
-import {from} from 'rxjs';
-import {getLocaleDateTimeFormat} from '@angular/common';
-import {DataStore} from 'js-data';
-import {Data} from '@angular/router';
+import {MarkerOptions, Point} from 'mapbox-gl';
 // import {MapService} from 'src/app/map.service';
+
+// tslint:disable-next-line:typedef
+function comparePoints(pointAId: mapboxgl.Layer, pointBId: mapboxgl.Layer) {
+  if (pointAId.metadata < pointBId.metadata) {
+    return 1;
+  }
+  if (pointAId.metadata === pointBId.metadata) {
+    return 0;
+  }
+  return -1;
+}
+
+
+function Trajectory (pointAId: mapboxgl.Layer, pointBId: mapboxgl.Layer) {
+  if (comparePoints(pointAId, pointBId) === 1) {
+    return false;
+  }
+  return true;
+}
+
+function getPathSequences(points: mapboxgl.Layer[]) {
+  for (let i = 0; i < points.length - 1; i ++) {
+    if (!Trajectory(points[i], points[i + 1])) {
+      this.mapboxDirections.setOrigin(points[i]);
+      this.mapboxDirections.setDestination(points[i + 1]);
+    }
+  }
+
+
+}
 
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.css']
 })
-export class MapComponent implements MarkerOptions, OnInit, Point {
+export class MapComponent implements OnInit {
 
 
   constructor() {
   }
 
-  idField: string;
-  selectedMarkerColour: string;
-  comparePoints: (pointAId: string, pointBId: string) => 0 | 1 | -1;
-  noTrajectory: (pointAId: string, pointBId: string) => boolean;
-  getPathSequences: (points: string[][]) => any;
-  maxClusterRadius: number;
-  defaultMarkerImage: string;
-  getMarkerColour: (point: Point) => string;
-  getCustomPopupContent: (point: Point, isCluster: boolean) => string;
-  maxMarkersInClusterToSpiderfy: any;
-  singleMarkerMode: boolean;
-  centerMapOnAddPoints: boolean;
+  // idField: string;
+  // selectedMarkerColour: string;
+  // comparePoints: (pointAId: mapboxgl.Layer, pointBId: mapboxgl.Layer) => 1 | 0 | -1
+  // noTrajectory: (pointAId: string, pointBId: string) => boolean;
+  // getPathSequences: (points: string[][]) => any;
+  // maxClusterRadius: number;
+  // defaultMarkerImage: string;
+  // getMarkerColour: (point: Point) => string;
+  // getCustomPopupContent: (point: Point, isCluster: boolean) => string;
+  // maxMarkersInClusterToSpiderfy: any;
+  // singleMarkerMode: boolean;
+  // centerMapOnAddPoints: boolean;
   map: mapboxgl.Map;
   style = 'mapbox://styles/mapbox/streets-v11';
   lat = 55.7;
@@ -68,44 +95,6 @@ export class MapComponent implements MarkerOptions, OnInit, Point {
   };
 
 
-
-
-  // userProperties has to be enabled
-  // draw = new MapboxDraw({
-  //   displayControlsDefault: false,
-  //   userProperties: true,
-  //   defaultMode: 'draw_circle',
-  //   clickBuffer: 10,
-  //   touchBuffer: 10,
-  //   modes: {
-  //     ...MapboxDraw.modes,
-  //     draw_circle: CircleMode,
-  //     direct_select: DirectMode,
-  //     simple_select: SimpleSelectMode,
-  //     drag_circle: DragCircleMode
-  //   }
-  // });
-//
-//   what = e => {
-//     console.log(this.draw.getAll().features);
-//     setTimeout(this.what, 2000);
-//   }.bind(this);
-// }
-//
-//   onMapLoaded = map => {
-//     map.addControl(this.draw);
-//     this.what();
-//
-//     const notifyParent = (features) => this.props.onFeaturesUpdated(features);
-//     map.on('draw.create', e => notifyParent(e.features));
-//     map.on('draw.update', e => notifyParent(e.features));
-//     map.on('draw.delete', e => notifyParent(e.features));
-//
-//   };
-
-
-
-
 p2: {
     id: 'id_1';
     azimut: 7;
@@ -126,6 +115,10 @@ ngOnInit() {
       zoom: 13,
       center: [this.lng, this.lat]
     });
+  //   const mapboxDirections = new MapboxDirections({
+  //   accessToken: mapboxgl.accessToken,
+  //   unit: 'metric'
+  // });
 
 
     // const draw = new MapboxDraw({
@@ -189,34 +182,34 @@ ngOnInit() {
 
     console.log(l.getCenter());
     // });
-
-    const pol = this.map.addSource('maine', {
-      type: 'geojson',
-      data: {
-        type: 'Feature',
-        geometry: {
-          type: 'Polygon',
-          coordinates: [
-            [
-              [37.61, 56.3],
-              [38.61, 55.3],
-              [37.61, 54.3],
-              [36.61, 55.3]
-            ]
-          ]
-        }
-      }
-    });
-    const pol1 = this.map.addLayer({
-      id: 'maine',
-      type: 'fill',
-      source: 'maine',
-      layout: {},
-      paint: {
-        'fill-color': '#088',
-        'fill-opacity': 0.8
-      }
-    });
+    //
+    // const pol = this.map.addSource('maine', {
+    //   type: 'geojson',
+    //   data: {
+    //     type: 'Feature',
+    //     geometry: {
+    //       type: 'Polygon',
+    //       coordinates: [
+    //         [
+    //           [37.61, 56.3],
+    //           [38.61, 55.3],
+    //           [37.61, 54.3],
+    //           [36.61, 55.3]
+    //         ]
+    //       ]
+    //     }
+    //   }
+    // });
+    // const pol1 = this.map.addLayer({
+    //   id: 'maine',
+    //   type: 'fill',
+    //   source: 'maine',
+    //   layout: {},
+    //   paint: {
+    //     'fill-color': '#998276',
+    //     'fill-opacity': 0.8
+    //   }
+    // });
 
 
     console.log(pol1.getCenter());
@@ -263,7 +256,7 @@ ngOnInit() {
         'line-width': 1
       }
     });
-    this.map.addSource('markers', {
+    const sourse1 = this.map.addSource('markers', {
         type: 'geojson',
         data: {
           type: 'FeatureCollection',
@@ -290,12 +283,27 @@ ngOnInit() {
       });
     const layer1 = this.map.addLayer({
         id: 'circles1',
-        source: 'markers',
+        source: {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: [{
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: [38.1, 55.3]
+              },
+              properties: {
+                modelId: 1,
+              },
+            }]
+          }
+        },
         type: 'circle',
         metadata: '16:15',
         paint: {
           'circle-radius': 10,
-          'circle-color': '#007cbf',
+          'circle-color': '#111234',
           'circle-opacity': 0.5,
           'circle-stroke-width': 0,
         },
@@ -316,7 +324,11 @@ ngOnInit() {
         },
         filter: ['==', 'modelId', 2],
       });
-    console.log('layer = ' + (layer1.getLayer('circles1').metadata < layer2.getLayer('circles2').metadata));
+    console.log(comparePoints(layer1.getLayer('circles1'), layer2.getLayer('circles2')));
+    console.log(Trajectory(layer2.getLayer('circles2'), layer1.getLayer('circles1')));
+    const points1 = [layer1.getLayer('circles1'), layer2.getLayer('circles2')];
+    // getPathSequences(points1);
+    console.log('layer = ' + layer1.getStyle());
   });
 
 
@@ -338,4 +350,10 @@ ngOnInit() {
     // });
   }
 }
+
+// tslint:disable-next-line:typedef
+
+
+
+
 

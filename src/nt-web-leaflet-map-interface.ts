@@ -1,3 +1,5 @@
+import * as mapboxgl from 'mapbox-gl';
+
 interface MarkerOptions {
     // ='_id' by default, need to set if unique marker field is different from '_id'
     idField: string;
@@ -5,7 +7,7 @@ interface MarkerOptions {
     //                           set instead of belongField if belongField can contain more then one value
     selectedMarkerColour: string;  // цвет для выделенного маркера (поставить по умолчанию серый?),
     // function(point1, point2) => boolean (to draw arrows between markers), markers are sorted using this compare func
-    comparePoints: (pointAId: string, pointBId: string) => -1 | 0 | 1;
+    comparePoints: (pointAId: mapboxgl.Layer, pointBId: mapboxgl.Layer) => -1 | 0 | 1;
     // function(point1, point2) => boolean, returns true if do not need to draw arrow between these markers
     noTrajectory: (pointAId: string, pointBId: string) => boolean;
     // function() =>  [ [first array of marker ids], [second],... ] - array of sequences of marker ids,
