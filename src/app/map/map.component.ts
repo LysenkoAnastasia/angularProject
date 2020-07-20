@@ -29,11 +29,9 @@ function comparePoints(pointAId: mapboxgl.Layer, pointBId: mapboxgl.Layer) {
 }
 
 
-function Trajectory (pointAId: mapboxgl.Layer, pointBId: mapboxgl.Layer) {
-  if (comparePoints(pointAId, pointBId) === 1) {
-    return false;
-  }
-  return true;
+function Trajectory(pointAId: mapboxgl.Layer, pointBId: mapboxgl.Layer) {
+  return comparePoints(pointAId, pointBId) !== 1;
+
 }
 
 function getPathSequences(points: mapboxgl.Layer[]) {
@@ -52,7 +50,7 @@ function getPathSequences(points: mapboxgl.Layer[]) {
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.css']
 })
-export class MapComponent implements OnInit {
+export class MapComponent implements OnInit, Point {
 
 
   constructor() {
@@ -181,53 +179,149 @@ ngOnInit() {
     });
 
     console.log(l.getCenter());
-    // });
-    //
-    // const pol = this.map.addSource('maine', {
-    //   type: 'geojson',
-    //   data: {
-    //     type: 'Feature',
-    //     geometry: {
-    //       type: 'Polygon',
-    //       coordinates: [
-    //         [
-    //           [37.61, 56.3],
-    //           [38.61, 55.3],
-    //           [37.61, 54.3],
-    //           [36.61, 55.3]
-    //         ]
-    //       ]
-    //     }
-    //   }
-    // });
-    // const pol1 = this.map.addLayer({
-    //   id: 'maine',
-    //   type: 'fill',
-    //   source: 'maine',
-    //   layout: {},
-    //   paint: {
-    //     'fill-color': '#998276',
-    //     'fill-opacity': 0.8
-    //   }
-    // });
 
-
-    console.log(pol1.getCenter());
   });
 
-    // draw.changeMode('draw_circle', { initialRadiusInKm: 0.5 });
-
-
-  //   console.log(draw);
 
 
 
     this.map.on('style.load', ev =>  {
-    this.map.addSource('museums', {
+      this.map.addSource('earthquakes', {
+        type: 'geojson',
+        data:
+          'https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson'
+      });
+
+      this.map.addLayer(
+        {
+          id: 'earthquakes-heat',
+          type: 'heatmap',
+          source: 'earthquakes',
+          maxzoom: 9,
+          paint: {
+// Increase the heatmap weight based on frequency and property magnitude
+            'heatmap-weight': [
+              'interpolate',
+              ['linear'],
+              ['get', 'mag'],
+              0,
+              0,
+              6,
+              1
+            ],
+// Increase the heatmap color weight weight by zoom level
+// heatmap-intensity is a multiplier on top of heatmap-weight
+            'heatmap-intensity': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              0,
+              1,
+              9,
+              3
+            ],
+// Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+// Begin color ramp at 0-stop with a 0-transparancy color
+// to create a blur-like effect.
+            'heatmap-color': [
+              'interpolate',
+              ['linear'],
+              ['heatmap-density'],
+              0,
+              'rgba(33,102,172,0)',
+              0.2,
+              'rgb(103,169,207)',
+              0.4,
+              'rgb(209,229,240)',
+              0.6,
+              'rgb(253,219,199)',
+              0.8,
+              'rgb(239,138,98)',
+              1,
+              'rgb(178,24,43)'
+            ],
+// Adjust the heatmap radius by zoom level
+            'heatmap-radius': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              0,
+              2,
+              9,
+              20
+            ],
+// Transition from heatmap to circle layer by zoom level
+            'heatmap-opacity': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              7,
+              1,
+              9,
+              0
+            ]
+          }
+        },
+        'waterway-label'
+      );
+
+      this.map.addLayer(
+        {
+          id: 'earthquakes-point',
+          type: 'circle',
+          source: 'earthquakes',
+          minzoom: 7,
+          paint: {
+// Size circle radius by earthquake magnitude and zoom level
+            'circle-radius': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              7,
+              ['interpolate', ['linear'], ['get', 'mag'], 1, 1, 6, 4],
+              16,
+              ['interpolate', ['linear'], ['get', 'mag'], 1, 5, 6, 50]
+            ],
+// Color circle by earthquake magnitude
+            'circle-color': [
+              'interpolate',
+              ['linear'],
+              ['get', 'mag'],
+              1,
+              'rgba(33,102,172,0)',
+              2,
+              'rgb(103,169,207)',
+              3,
+              'rgb(209,229,240)',
+              4,
+              'rgb(253,219,199)',
+              5,
+              'rgb(239,138,98)',
+              6,
+              'rgb(178,24,43)'
+            ],
+            'circle-stroke-color': 'white',
+            'circle-stroke-width': 1,
+// Transition from heatmap to circle layer by zoom level
+            'circle-opacity': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              7,
+              0,
+              8,
+              1
+            ]
+          }
+        },
+        'waterway-label'
+      );
+
+      this.map.addSource('museums', {
       type: 'vector',
       url: 'mapbox://mapbox.2opop9hr'
     });
-    this.map.addLayer({
+      this.map.addLayer({
       id: 'museums',
       type: 'circle',
       source: 'museums',
@@ -238,11 +332,11 @@ ngOnInit() {
       'source-layer': 'museum-cusco'
     });
 
-    this.map.addSource('contours', {
+      this.map.addSource('contours', {
       type: 'vector',
       url: 'mapbox://mapbox.mapbox-terrain-v2'
     });
-    this.map.addLayer({
+      this.map.addLayer({
       id: 'contours',
       type: 'line',
       source: 'contours',
@@ -256,7 +350,7 @@ ngOnInit() {
         'line-width': 1
       }
     });
-    const sourse1 = this.map.addSource('markers', {
+      const sourse1 = this.map.addSource('markers', {
         type: 'geojson',
         data: {
           type: 'FeatureCollection',
@@ -281,7 +375,7 @@ ngOnInit() {
           }]
         }
       });
-    const layer1 = this.map.addLayer({
+      const layer1 = this.map.addLayer({
         id: 'circles1',
         source: {
           type: 'geojson',
@@ -310,7 +404,7 @@ ngOnInit() {
         filter: ['==', 'modelId', 1],
       });
 
-    const layer2 = this.map.addLayer({
+      const layer2 = this.map.addLayer({
         id: 'circles2',
         source: 'markers',
         type: 'circle',
@@ -324,11 +418,10 @@ ngOnInit() {
         },
         filter: ['==', 'modelId', 2],
       });
-    console.log(comparePoints(layer1.getLayer('circles1'), layer2.getLayer('circles2')));
-    console.log(Trajectory(layer2.getLayer('circles2'), layer1.getLayer('circles1')));
-    const points1 = [layer1.getLayer('circles1'), layer2.getLayer('circles2')];
-    // getPathSequences(points1);
-    console.log('layer = ' + layer1.getStyle());
+      console.log(comparePoints(layer1.getLayer('circles1'), layer2.getLayer('circles2')));
+      console.log(Trajectory(layer2.getLayer('circles2'), layer1.getLayer('circles1')));
+      const arr = [layer1.getLayer('circles1'), layer2.getLayer('circles2')];
+    // getPathSequences(arr);
   });
 
 
@@ -344,14 +437,9 @@ ngOnInit() {
     const marker1 = new mapboxgl.Marker()
       .setLngLat([37.55, 55.7])
       .addTo(this.map);
-
-    // this.comparePoints(marker1.getElement().id, 'id_2');
-
-    // });
   }
 }
 
-// tslint:disable-next-line:typedef
 
 
 
