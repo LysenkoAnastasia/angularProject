@@ -2,8 +2,6 @@ import { environment } from 'src/environments/environment';
 import {Component, OnInit, ChangeDetectorRef, OnDestroy, OnChanges, SimpleChanges} from '@angular/core';
 import * as mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
-import Constants from '@mapbox/mapbox-gl-draw';
-import doubleClickZoom from '@mapbox/mapbox-gl-draw/src/lib/double_click_zoom';
 import circle from '@turf/circle';
 // import MapboxDirections;
 
