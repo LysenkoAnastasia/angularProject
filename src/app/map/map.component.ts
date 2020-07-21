@@ -1,23 +1,14 @@
 import { environment } from 'src/environments/environment';
 import {Component, OnInit, ChangeDetectorRef, OnDestroy, OnChanges, SimpleChanges} from '@angular/core';
 import * as mapboxgl from 'mapbox-gl';
-// import MarkerOptions from "./src/nt-web-leaflet-map-interface";
-import {
-  CircleMode,
-  DragCircleMode,
-  DirectMode,
-  SimpleSelectMode
-} from 'mapbox-gl-draw-circle';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import Constants from '@mapbox/mapbox-gl-draw';
 import doubleClickZoom from '@mapbox/mapbox-gl-draw/src/lib/double_click_zoom';
 import circle from '@turf/circle';
 // import MapboxDirections;
 
-import {MarkerOptions, Point} from 'mapbox-gl';
-// import {MapService} from 'src/app/map.service';
+import {MarkerOptions, Point} from 'src/nt-web-leaflet-map-interface';
 
-// tslint:disable-next-line:typedef
 function comparePoints(pointAId: mapboxgl.Layer, pointBId: mapboxgl.Layer) {
   if (pointAId.metadata < pointBId.metadata) {
     return 1;
@@ -41,18 +32,40 @@ function getPathSequences(points: mapboxgl.Layer[]) {
       this.mapboxDirections.setDestination(points[i + 1]);
     }
   }
+}
 
+function getCustomPopupContent() {
+    this.map.on('mouseenter', 'places', e => {
+    this.map.getCanvas().style.cursor = 'pointer';
 
+    const coordinates = e.features[0].geometry.coordinates.slice();
+    const description = e.features[0].properties.description;
+
+    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+      coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+    }
+
+    this.popup
+      .setLngLat(coordinates)
+      .setHTML(description)
+      .addTo(this.map);
+  });
+
+    this.map.on('mouseleave', 'places', e => {
+    this.map.getCanvas().style.cursor = '';
+    this.popup.remove();
+  });
 }
 
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
-  styleUrls: ['./map.component.css']
+  styleUrls: ['./map.component.css'],
+
 })
 export class MapComponent implements OnInit, Point {
 
-
+  includeGeometry: true;
   constructor() {
   }
 
@@ -73,8 +86,8 @@ export class MapComponent implements OnInit, Point {
   lat = 55.7;
   lng = 37.61;
 
-  id: string;
   azimut: number;
+  id: string;
   latitude: number;
   longitude: number;
   markerColour: string;
@@ -102,6 +115,10 @@ p2: {
     markerImage: 'monument';
     radius: 0.3;
   };
+  popup = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: false
+});
 
 
 ngOnInit() {
@@ -113,19 +130,7 @@ ngOnInit() {
       zoom: 13,
       center: [this.lng, this.lat]
     });
-  //   const mapboxDirections = new MapboxDirections({
-  //   accessToken: mapboxgl.accessToken,
-  //   unit: 'metric'
-  // });
 
-
-    // const draw = new MapboxDraw({
-    // defaultMode: 'draw_circle',
-    // userProperties: true,
-    // clickBuffer: 10,
-    // touchBuffer: 10,
-    // });
-  // userProperties has to be enabled
     const draw = new MapboxDraw();
     this.map.addControl(draw, 'top-left');
 
@@ -178,8 +183,6 @@ ngOnInit() {
       }
     });
 
-    console.log(l.getCenter());
-
   });
 
 
@@ -191,6 +194,8 @@ ngOnInit() {
         data:
           'https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson'
       });
+
+
 
       this.map.addLayer(
         {
@@ -396,7 +401,7 @@ ngOnInit() {
         type: 'circle',
         metadata: '16:15',
         paint: {
-          'circle-radius': 10,
+          'circle-radius': 18,
           'circle-color': '#111234',
           'circle-opacity': 0.5,
           'circle-stroke-width': 0,
@@ -421,7 +426,9 @@ ngOnInit() {
       console.log(comparePoints(layer1.getLayer('circles1'), layer2.getLayer('circles2')));
       console.log(Trajectory(layer2.getLayer('circles2'), layer1.getLayer('circles1')));
       const arr = [layer1.getLayer('circles1'), layer2.getLayer('circles2')];
-    // getPathSequences(arr);
+      // getCustomPopupContent();
+      // getPathSequences(arr);
+
   });
 
 
@@ -437,6 +444,62 @@ ngOnInit() {
     const marker1 = new mapboxgl.Marker()
       .setLngLat([37.55, 55.7])
       .addTo(this.map);
+
+    this.map.on('load', ee => {
+    this.map.addSource('places', {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: {
+              description:
+                '<strong>Name</strong><p>Тут должно быть описание</p>',
+              icon: 'theatre'
+            },
+            geometry: {
+              type: 'Point',
+              coordinates: [38.1, 55.3]
+            }
+          },
+        ]
+      }
+    });
+// Add a layer showing the places.
+    this.map.addLayer({
+      id: 'places',
+      type: 'symbol',
+      source: 'places',
+      layout: {
+        'icon-image': '{icon}-15',
+        'icon-allow-overlap': true
+      }
+    });
+
+    this.map.on('click', 'places', e => {
+      const coordinates = e.features[0].geometry.coordinates.slice();
+      const description = e.features[0].properties.description;
+
+      while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+      }
+
+      new mapboxgl.Popup()
+        .setLngLat(coordinates)
+        .setHTML(description)
+        .addTo(this.map);
+    });
+
+    this.map.on('mouseenter', 'places', function() {
+      this.map.getCanvas().style.cursor = 'pointer';
+    });
+
+    this.map.on('mouseleave', 'places', еее => {
+      this.map.getCanvas().style.cursor = '';
+    });
+  });
+
   }
 }
 

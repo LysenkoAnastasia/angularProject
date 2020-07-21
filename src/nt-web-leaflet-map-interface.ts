@@ -1,6 +1,6 @@
-import * as mapboxgl from 'mapbox-gl';
+// import * as mapboxgl from 'mapbox-gl';
 
-interface MarkerOptions {
+export interface MarkerOptions {
     // ='_id' by default, need to set if unique marker field is different from '_id'
     idField: string;
     // countClusterBelongings,  //function(pointsArray) => number of belongings of all markers in cluster;
@@ -46,7 +46,7 @@ interface MarkerOptions {
     // sectorRealsizeGeojsonField //field of marker data with geojson of its sector (sector radius is real - in proper zoom)
 }
 
-interface Point {
+export interface Point {
     id: string;
     latitude: number;
     longitude: number;
