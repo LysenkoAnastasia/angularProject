@@ -3,7 +3,13 @@ import {Component, OnInit, ChangeDetectorRef, OnDestroy, OnChanges, SimpleChange
 import * as mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import circle from '@turf/circle';
-// import MapboxDirections;
+import {
+  CircleMode,
+  DragCircleMode,
+  DirectMode,
+  SimpleSelectMode
+} from 'mapbox-gl-draw-circle';
+
 
 import {MarkerOptions, Point} from 'src/nt-web-leaflet-map-interface';
 
@@ -64,6 +70,7 @@ function getCustomPopupContent() {
 export class MapComponent implements OnInit, Point {
 
   includeGeometry: true;
+
   constructor() {
   }
 
@@ -92,34 +99,13 @@ export class MapComponent implements OnInit, Point {
   markerImage: string;
   radius: number;
 
-  p1: {
-    id: 'id_1';
-    azimut: 7;
-    latitude: 37.5;
-    longitude: 55.6;
-    markerColour: '#880977';
-    markerImage: '';
-    radius: 1;
-
-  };
-
-
-p2: {
-    id: 'id_1';
-    azimut: 7;
-    latitude: 37.3;
-    longitude: 55.9;
-    markerColour: '#880977';
-    markerImage: 'monument';
-    radius: 0.3;
-  };
   popup = new mapboxgl.Popup({
     closeButton: false,
     closeOnClick: false
-});
+  });
 
 
-ngOnInit() {
+  ngOnInit() {
     Object.getOwnPropertyDescriptor(mapboxgl, 'accessToken').set(environment.mapbox.accessToken);
     // mapboxgl.accessToken = environment.mapbox.accessToken;
     this.map = new mapboxgl.Map({
@@ -133,66 +119,55 @@ ngOnInit() {
     this.map.addControl(draw, 'top-left');
 
 
+
+
     this.map.on('load', (event) => {
-    this.map.addSource('points', {
-      type: 'geojson',
-      data: {
-        type: 'FeatureCollection',
-        features: [
-          {
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: [
-                -77.03238901390978,
-                38.913188059745586
-              ]
-            },
-            properties: {
-              title: 'Mapbox DC',
-              icon: 'monument'
+      this.map.addSource('points', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: [
+                  37.605238258838654,
+                  55.7472557466054
+                ]
+              },
+              properties: {
+                description:
+                  '<strong>Пушкинский музей</strong><p>Госуда́рственный музе́й изобразительных иску́сств и́мени А. С. Пу́шкина (ГМИИ имени Пушкина, Пушкинский музей) — московский музей зарубежного искусства, основанный профессором Московского университета Иваном Цветаевым в 1912 году.</p>',
+                title: 'Pushkin Museum',
+                icon: 'museum'
+              }
             }
-          },
-          {
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: [-122.414, 37.776]
-            },
-            properties: {
-              title: 'Mapbox SF',
-              icon: 'harbor'
-            }
-          }
-        ]
-      }
-    });
-    const l = this.map.addLayer({
-      id: 'points',
-      type: 'symbol',
-      source: 'points',
-      layout: {
+          ]
+        }
+      });
+      const l = this.map.addLayer({
+        id: 'points',
+        type: 'symbol',
+        source: 'points',
+        layout: {
+          'icon-image': ['concat', ['get', 'icon'], '-15'],
+          'text-field': ['get', 'title'],
+          'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+          'text-offset': [0, 0.6],
+          'text-anchor': 'top'
+        }
+      });
 
-        'icon-image': ['concat', ['get', 'icon'], '-15'],
-        'text-field': ['get', 'title'],
-        'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
-        'text-offset': [0, 0.6],
-        'text-anchor': 'top'
-      }
     });
 
-  });
 
-
-
-
-    this.map.on('style.load', ev =>  {
+    this.map.on('style.load', ev => {
       this.map.addSource('earthquakes', {
         type: 'geojson',
         data:
           'https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson'
       });
-
 
 
       this.map.addLayer(
@@ -321,38 +296,38 @@ ngOnInit() {
       );
 
       this.map.addSource('museums', {
-      type: 'vector',
-      url: 'mapbox://mapbox.2opop9hr'
-    });
+        type: 'vector',
+        url: 'mapbox://mapbox.2opop9hr'
+      });
       this.map.addLayer({
-      id: 'museums',
-      type: 'circle',
-      source: 'museums',
-      paint: {
-        'circle-radius': 8,
-        'circle-color': 'rgba(55,148,179,1)'
-      },
-      'source-layer': 'museum-cusco'
-    });
+        id: 'museums',
+        type: 'circle',
+        source: 'museums',
+        paint: {
+          'circle-radius': 8,
+          'circle-color': 'rgba(55,148,179,1)'
+        },
+        'source-layer': 'museum-cusco'
+      });
 
       this.map.addSource('contours', {
-      type: 'vector',
-      url: 'mapbox://mapbox.mapbox-terrain-v2'
-    });
+        type: 'vector',
+        url: 'mapbox://mapbox.mapbox-terrain-v2'
+      });
       this.map.addLayer({
-      id: 'contours',
-      type: 'line',
-      source: 'contours',
-      'source-layer': 'contour',
-      layout: {
-        'line-join': 'round',
-        'line-cap': 'round'
-      },
-      paint: {
-        'line-color': '#877b59',
-        'line-width': 1
-      }
-    });
+        id: 'contours',
+        type: 'line',
+        source: 'contours',
+        'source-layer': 'contour',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#877b59',
+          'line-width': 1
+        }
+      });
       const sourse1 = this.map.addSource('markers', {
         type: 'geojson',
         data: {
@@ -378,7 +353,7 @@ ngOnInit() {
           }]
         }
       });
-      const layer1 = this.map.addLayer({
+      const circle_1 = this.map.addLayer({
         id: 'circles1',
         source: {
           type: 'geojson',
@@ -391,6 +366,8 @@ ngOnInit() {
                 coordinates: [38.1, 55.3]
               },
               properties: {
+                description:
+                  '<strong>Name</strong><p>Тут должно быть описание</p>',
                 modelId: 1,
               },
             }]
@@ -421,13 +398,10 @@ ngOnInit() {
         },
         filter: ['==', 'modelId', 2],
       });
-      console.log(comparePoints(layer1.getLayer('circles1'), layer2.getLayer('circles2')));
-      console.log(Trajectory(layer2.getLayer('circles2'), layer1.getLayer('circles1')));
-      const arr = [layer1.getLayer('circles1'), layer2.getLayer('circles2')];
-      // getCustomPopupContent();
-      // getPathSequences(arr);
-
-  });
+      console.log(comparePoints(circle_1.getLayer('circles1'), layer2.getLayer('circles2')));
+      console.log(Trajectory(layer2.getLayer('circles2'), circle_1.getLayer('circles1')));
+      const arr = [circle_1.getLayer('circles1'), layer2.getLayer('circles2')];
+    });
 
 
     this.map.addControl(new mapboxgl.NavigationControl());
@@ -443,60 +417,101 @@ ngOnInit() {
       .setLngLat([37.55, 55.7])
       .addTo(this.map);
 
+
+    // кластеризация портов
     this.map.on('load', ee => {
-    this.map.addSource('places', {
-      type: 'geojson',
-      data: {
-        type: 'FeatureCollection',
-        features: [
-          {
-            type: 'Feature',
-            properties: {
-              description:
-                '<strong>Name</strong><p>Тут должно быть описание</p>',
-              icon: 'theatre'
-            },
-            geometry: {
-              type: 'Point',
-              coordinates: [38.1, 55.3]
-            }
-          },
-        ]
-      }
-    });
-// Add a layer showing the places.
-    this.map.addLayer({
-      id: 'places',
-      type: 'symbol',
-      source: 'places',
-      layout: {
-        'icon-image': '{icon}-15',
-        'icon-allow-overlap': true
-      }
-    });
+      this.map.addSource('ports', {
+        type: 'geojson',
+        data:
+          'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_ports.geojson',
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 50
+      });
 
-    this.map.on('click', 'places', e => {
-      const coordinates = e.features[0].geometry.coordinates.slice();
-      const description = e.features[0].properties.description;
+      this.map.addLayer({
+        id: 'clusters',
+        type: 'circle',
+        source: 'ports',
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': [
+            'step',
+            ['get', 'point_count'],
+            '#FF0000',
+            100,
+            '#008080',
+            750,
+            '#FF00FF'
+          ],
+          'circle-radius': [
+            'step',
+            ['get', 'point_count'],
+            20,
+            100,
+            30,
+            750,
+            40
+          ]
+        }
+      });
 
-      while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-      }
+      this.map.addLayer({
+        id: 'cluster-count',
+        type: 'symbol',
+        source: 'ports',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': '{point_count_abbreviated}',
+          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+          'text-size': 12
+        }
+      });
 
-      new mapboxgl.Popup()
-        .setLngLat(coordinates)
-        .setHTML(description)
-        .addTo(this.map);
+      this.map.addLayer({
+        id: 'unclustered-point',
+        type: 'circle',
+        source: 'ports',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-color': '#11b4da',
+          'circle-radius': 4,
+          'circle-stroke-width': 1,
+          'circle-stroke-color': '#fff'
+        }
+      });
+
+      // конец кластеризации
+
+
+      this.map.on('click', 'points', e => {
+        const coordinates = e.features[0].geometry.coordinates.slice();
+        const description = e.features[0].properties.description;
+
+        console.log('coord = ' + coordinates);
+
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+          coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+
+        new mapboxgl.Popup()
+          .setLngLat(coordinates)
+          .setHTML(description)
+          .addTo(this.map);
+      });
+
+      this.map.on('mouseenter', 'points', eee => {
+        this.map.getCanvas().style.cursor = 'pointer';
+      });
+
+      this.map.on('mouseleave', 'points', еее => {
+        this.map.getCanvas().style.cursor = '';
+      });
+
+      this.map.on('load', e => {
+
+      });
     });
-
-    this.map.on('mouseenter', 'places', function() {
-      this.map.getCanvas().style.cursor = 'pointer';
-    });
-
-    this.map.on('mouseleave', 'places', еее => {
-      this.map.getCanvas().style.cursor = '';
-    });
-  });
 
   }
 }
